@@ -37,13 +37,13 @@ public class TaskController {
     }
 
     @Operation(summary = "Update tasks")
-    @PutMapping ("update/{id}")
+    @PutMapping ("/{id}")
     public TaskResponse updateTask(@PathVariable Long id,@Valid @RequestBody TaskUpdate task){
         return service.updateTask(id, task);
     }
 
     @Operation(summary = "Delete task by ID number")
-    @DeleteMapping ("delete/{Id}")
+    @DeleteMapping ("/{Id}")
     public TaskResponse delete(@PathVariable Long Id) throws Exception {return service.delete(Id);}
 
 

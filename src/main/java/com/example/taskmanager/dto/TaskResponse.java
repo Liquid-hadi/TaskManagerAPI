@@ -1,8 +1,12 @@
 package com.example.taskmanager.dto;
 
+import com.example.taskmanager.enums.TaskPriority;
+import com.example.taskmanager.enums.TaskStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.Instant;
 
 @Setter
 @Getter
@@ -16,11 +20,24 @@ public class TaskResponse {
     @Schema(example = "1.milk 2.eggs")
     private String Description;
 
+    @Schema(example = "Todo")
+    private TaskStatus status;
+
+    @Schema(example = "Medium")
+    private TaskPriority priority;
+
+    private Instant createdAt;
+    private Instant updatedAt;
+
     public TaskResponse(){}
 
-    public TaskResponse(Long Id, String name, String Description){
+    public TaskResponse(Long Id, String name, String Description, TaskPriority priority, TaskStatus status, Instant createdAt, Instant updatedAt){
         this.Description = Description;
         this.Id=Id;
         this.name = name;
+        this.status = status;
+        this.priority = priority;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }
