@@ -21,6 +21,7 @@
 <div class="row">
     <input id="name" placeholder="Task name"/>
     <input id="desc" placeholder="Description"/>
+    <input id="dueDate" type="date"/>
 
     <span class="label">Status:</span>
     <select id="status">
@@ -93,6 +94,7 @@
 
                 '<input value="' + esc(t.name) + '" id="name-' + t.id + '" placeholder="Task name">' +
                 '<input value="' + esc(t.description) + '" id="desc-' + t.id + '" placeholder="Description">' +
+                '<input type="date" value="' + esc(t.dueDate || "") + '" id="dueDate-' + t.id + '">' +
 
                 '<span class="label">Status:</span>' +
                 '<select id="status-' + t.id + '">' +
@@ -125,6 +127,7 @@
             body: JSON.stringify({
                 name: document.getElementById("name").value,
                 description: document.getElementById("desc").value,
+                dueDate: document.getElementById("dueDate").value,
                 status: document.getElementById("status").value,
                 priority: document.getElementById("priority").value
             })
@@ -146,6 +149,7 @@
             body: JSON.stringify({
                 name: document.getElementById("name-"+id).value,
                 description: document.getElementById("desc-"+id).value,
+                dueDate: document.getElementById("dueDate-"+id).value,
                 status: document.getElementById("status-"+id).value,
                 priority: document.getElementById("priority-"+id).value
             })

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Setter
 @Getter
@@ -20,6 +21,9 @@ public class TaskResponse {
     @Schema(example = "1.milk 2.eggs")
     private String Description;
 
+    @Schema(example = "2026-02-15")
+    private LocalDate dueDate;
+
     @Schema(example = "Todo")
     private TaskStatus status;
 
@@ -31,10 +35,11 @@ public class TaskResponse {
 
     public TaskResponse(){}
 
-    public TaskResponse(Long Id, String name, String Description, TaskPriority priority, TaskStatus status, Instant createdAt, Instant updatedAt){
+    public TaskResponse(Long Id, String name, String Description, LocalDate dueDate,TaskPriority priority, TaskStatus status, Instant createdAt, Instant updatedAt){
         this.Description = Description;
         this.Id=Id;
         this.name = name;
+        this.dueDate = dueDate;
         this.status = status;
         this.priority = priority;
         this.createdAt = createdAt;

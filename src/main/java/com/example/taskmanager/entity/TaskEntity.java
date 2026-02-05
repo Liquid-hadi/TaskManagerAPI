@@ -2,15 +2,16 @@ package com.example.taskmanager.entity;
 
 import com.example.taskmanager.enums.TaskPriority;
 import com.example.taskmanager.enums.TaskStatus;
-import com.example.taskmanager.service.TaskService;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -34,6 +35,9 @@ public class TaskEntity {
     @Column(nullable = false)
     private TaskPriority priority = TaskPriority.MEDIUM;
 
+    @Column(nullable = false)
+    private LocalDate dueDate;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant CreatedAt;
@@ -44,9 +48,10 @@ public class TaskEntity {
 
     public TaskEntity(){}
 
-    public TaskEntity(String name, String Description){
+    public TaskEntity(String name, String Description, LocalDate dueDate){
         this.name=name;
         this.Description=Description;
+        this.dueDate = dueDate;
     }
 
 }
