@@ -1,8 +1,6 @@
 package com.example.taskmanager.enums;
 
 
-import lombok.ToString;
-
 public enum TaskPriority {
     LOW("Low"),
     MEDIUM("Medium"),

@@ -3,7 +3,8 @@ package com.example.taskmanager.enums;
 public enum TaskStatus {
     TODO("Todo"),
     IN_PROGRESS("In progress"),
-    DONE("Done");
+    DONE("Done"),
+    DELETED("Deleted");
 
     private final String value;
 
