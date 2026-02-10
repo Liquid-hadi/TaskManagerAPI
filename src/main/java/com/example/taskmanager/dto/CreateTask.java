@@ -20,7 +20,6 @@ public class CreateTask {
     @Schema(example = "2026-02-15")
     private LocalDate dueDate;
 
-
     @Schema(example = "Todo")
     private TaskStatus status;
 

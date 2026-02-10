@@ -5,15 +5,13 @@ import com.example.taskmanager.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Date;
+
 
 @Getter
 @Setter
@@ -30,7 +28,7 @@ public class TaskEntity {
     private String name;
 
     @Column
-    private String Description;
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -54,7 +52,7 @@ public class TaskEntity {
 
     public TaskEntity(String name, String Description, LocalDate dueDate){
         this.name=name;
-        this.Description=Description;
+        this.description =Description;
         this.dueDate = dueDate;
     }
 

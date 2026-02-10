@@ -8,8 +8,9 @@ import com.example.taskmanager.enums.TaskPriority;
 import com.example.taskmanager.enums.TaskStatus;
 import com.example.taskmanager.exceptions.CustomException;
 import com.example.taskmanager.repository.TaskRepo;
+import com.example.taskmanager.spec.TaskSpecifications;
 import jakarta.transaction.Transactional;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,8 +30,14 @@ public class TaskServiceImpl implements TaskService{
 
     //===============Show All Tasks=================
     @Transactional
-    public List<TaskResponse> showTasks(){
-        List<TaskEntity> tasks = repo.findAllByStatusNot(TaskStatus.DELETED);
+    public List<TaskResponse> showTasks(TaskPriority priority, TaskStatus status, String q, LocalDate dueDateFrom, LocalDate dueDateTo){
+        Specification<TaskEntity> spec = TaskSpecifications.notDeleted()
+                .and(TaskSpecifications.hasPriority(priority))
+                .and(TaskSpecifications.hasSatus(status))
+                .and(TaskSpecifications.SearchQ(q))
+                .and(TaskSpecifications.dueDateBetween(dueDateFrom,dueDateTo));
+
+        List<TaskEntity> tasks = repo.findAll(spec);
 
         for(TaskEntity task : tasks){
             if (task.getStatus() == TaskStatus.IN_PROGRESS && task.getDueDate().isBefore(LocalDate.now()))
@@ -38,6 +45,7 @@ public class TaskServiceImpl implements TaskService{
                 task.setPriority(TaskPriority.HIGH);
             }
         }
+
         return tasks.stream().map(task ->new TaskResponse(
                 task.getId(),
                 task.getName(),
@@ -50,13 +58,14 @@ public class TaskServiceImpl implements TaskService{
         )).toList();
     }
     // ==================DELETE FUNCTION==================
+    @Transactional
     public TaskResponse delete(Long Id) {
         validateID(Id);
         int updated = repo.softDeleteById(Id);
         return null;
     }
 
-    // ===========not yet added in frontend
+    // =========== not yet added in frontend
     public  TaskResponse getById(Long Id){
         TaskEntity task = repo.findById(Id).orElseThrow(()-> new RuntimeException("Task not Found"));
         return new TaskResponse(task.getId(),
@@ -69,7 +78,7 @@ public class TaskServiceImpl implements TaskService{
                                 task.getUpdatedAt());
 
     }
-    //=====================UPDATE Function====================
+        //=====================UPDATE Function====================
     public TaskResponse updateTask(Long Id, TaskUpdate update){
         TaskEntity task = repo.findById(Id).orElseThrow(()-> new CustomException("Task not found"));
         validateUpdate(Id , update, task);
