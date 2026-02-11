@@ -30,7 +30,7 @@ public class TaskResponse {
     @Schema(example = "Medium")
     private TaskPriority priority;
 
-    private Instant createdAt;
+    private Instant CreatedAt;
     private Instant updatedAt;
 
     public TaskResponse(){}
@@ -42,7 +42,7 @@ public class TaskResponse {
         this.dueDate = dueDate;
         this.status = status;
         this.priority = priority;
-        this.createdAt = createdAt;
+        this.CreatedAt = createdAt;
         this.updatedAt = updatedAt;
     }
 }

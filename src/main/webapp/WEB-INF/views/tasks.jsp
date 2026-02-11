@@ -42,8 +42,6 @@
     <button onclick="addTask()">Add</button>
 </div>
 
-<hr/>
-
 <!-- FILTERS -->
 <h3>Filters</h3>
 <div class="row">
@@ -76,12 +74,44 @@
     <button onclick="clearFilters()">Clear</button>
 </div>
 
+<!-- PAGINATION + SORT -->
+<h3>Pagination & Sorting</h3>
+<div class="row">
+    <span class="label">Size:</span>
+    <select id="p-size" onchange="applyPagingSorting()">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+    </select>
+
+    <span class="label">Sort By:</span>
+    <select id="p-sortBy" onchange="applyPagingSorting()">
+        <option value="CreatedAt" selected>CreatedAt</option>
+        <option value="dueDate">dueDate</option>
+        <option value="priority">priority</option>
+    </select>
+
+    <span class="label">Dir:</span>
+    <select id="p-sortDir" onchange="applyPagingSorting()">
+        <option value="desc" selected>desc</option>
+        <option value="asc">asc</option>
+    </select>
+
+    <span id="pageInfo" class="meta"></span>
+</div>
+
+<div class="row" id="pager"></div>
+
+<hr/>
+
 <ul id="tasks"></ul>
 
-<script>
-    // Use same-origin so it works on any port/host (no hardcoded localhost)
-    const BASE = "";
+<hr/>
 
+
+<script>
+    const BASE = "";
     function esc(s) {
         return String(s ?? "")
             .replaceAll("&", "&amp;")
@@ -123,6 +153,21 @@
         document.getElementById("f-priority").value = p.get("priority") || "";
         document.getElementById("f-from").value = p.get("dueDateFrom") || "";
         document.getElementById("f-to").value = p.get("dueDateTo") || "";
+        document.getElementById("p-size").value = p.get("size") || "10";
+        document.getElementById("p-sortBy").value = p.get("sortBy") || "CreatedAt";
+        document.getElementById("p-sortDir").value = p.get("sortDir") || "desc";
+    }
+
+    function applyPagingSorting() {
+        const p = new URLSearchParams(window.location.search);
+        p.set("size", document.getElementById("p-size").value);
+        p.set("sortBy", document.getElementById("p-sortBy").value);
+        p.set("sortDir", document.getElementById("p-sortDir").value);
+        // reset to first page
+        p.set("page", "0");
+
+        history.replaceState(null, "", window.location.pathname + "?" + p.toString());
+        loadTasks();
     }
 
     function applyFilters() {
@@ -140,22 +185,42 @@
         if (from) p.set("dueDateFrom", from);
         if (to) p.set("dueDateTo", to);
 
-        history.replaceState(null, "", window.location.pathname + (p.toString() ? "?" + p.toString() : ""));
+        // ✅ always reset to first page when filters change
+        p.set("page", "0");
+
+        // include current paging/sorting
+        p.set("size", document.getElementById("p-size").value);
+        p.set("sortBy", document.getElementById("p-sortBy").value);
+        p.set("sortDir", document.getElementById("p-sortDir").value);
+
+        history.replaceState(null, "", window.location.pathname + "?" + p.toString());
         loadTasks();
     }
 
     function clearFilters() {
-        history.replaceState(null, "", window.location.pathname);
+        const p = new URLSearchParams();
+        p.set("page", "0");
+        p.set("size", "10");
+        p.set("sortBy", "createdAt");
+        p.set("sortDir", "desc");
+
+        history.replaceState(null, "", window.location.pathname + "?" + p.toString());
         initFiltersFromUrl();
         loadTasks();
     }
 
     async function loadTasks() {
-        // Forward the page query string to the API
         const qs = window.location.search || "";
         const res = await fetch(BASE + "/api/tasks" + qs);
-        const tasks = await res.json();
+        const pageData = await res.json();
 
+        const tasks = pageData.content || []; // ✅ Page content
+        renderTasks(tasks);
+
+        renderPager(pageData.number ?? 0, pageData.totalPages ?? 0, pageData.totalElements ?? 0);
+    }
+
+    function renderTasks(tasks) {
         const ul = document.getElementById("tasks");
         ul.innerHTML = "";
 
@@ -185,13 +250,67 @@
                 '</div>' +
 
                 '<div class="meta">' +
-                'Created: ' + esc(fmtDate(t.createdAt)) +
+                'Created: ' + esc(fmtDate(t.CreatedAt)) +
                 ' | Updated: ' + esc(fmtDate(t.updatedAt)) +
                 '</div>';
 
             ul.appendChild(li);
         });
     }
+
+    function renderPager(pageNumber, totalPages, totalElements) {
+        const pager = document.getElementById("pager");
+        const info = document.getElementById("pageInfo");
+
+        pager.innerHTML = "";
+
+        if (totalPages === 0) {
+            info.textContent = "No results";
+            return;
+        }
+
+        // display 1-based to user
+        info.textContent = `Page ${pageNumber + 1} / ${totalPages} — Total: ${totalElements}`;
+
+        const p = new URLSearchParams(window.location.search);
+
+        const prevBtn = document.createElement("button");
+        prevBtn.textContent = "Prev";
+        prevBtn.disabled = pageNumber <= 0;
+        prevBtn.onclick = () => {
+            p.set("page", String(pageNumber - 1));
+            history.replaceState(null, "", window.location.pathname + "?" + p.toString());
+            loadTasks();
+        };
+        pager.appendChild(prevBtn);
+
+        // page buttons (max 7)
+        const start = Math.max(0, pageNumber - 3);
+        const end = Math.min(totalPages - 1, pageNumber + 3);
+
+        for (let i = start; i <= end; i++) {
+            const b = document.createElement("button");
+            b.textContent = String(i + 1);
+            b.disabled = i === pageNumber;
+            b.onclick = () => {
+                p.set("page", String(i));
+                history.replaceState(null, "", window.location.pathname + "?" + p.toString());
+                loadTasks();
+            };
+            pager.appendChild(b);
+        }
+
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next";
+        nextBtn.disabled = pageNumber >= totalPages - 1;
+        nextBtn.onclick = () => {
+            p.set("page", String(pageNumber + 1));
+            history.replaceState(null, "", window.location.pathname + "?" + p.toString());
+            loadTasks();
+        };
+        pager.appendChild(nextBtn);
+    }
+
 
     async function addTask() {
         await fetch(BASE + "/api/tasks", {

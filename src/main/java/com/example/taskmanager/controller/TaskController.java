@@ -4,17 +4,15 @@ package com.example.taskmanager.controller;
 import com.example.taskmanager.dto.CreateTask;
 import com.example.taskmanager.dto.TaskResponse;
 import com.example.taskmanager.dto.TaskUpdate;
-import com.example.taskmanager.entity.TaskEntity;
 import com.example.taskmanager.enums.TaskPriority;
 import com.example.taskmanager.enums.TaskStatus;
 import com.example.taskmanager.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -33,14 +31,18 @@ public class TaskController {
 
     @Operation(summary = "Show tasks")
     @GetMapping
-    public List<TaskResponse> showTasks(
+    public Page<TaskResponse> showTasks(
             @RequestParam(required = false) TaskPriority priority,
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) String q,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateTo
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "CreatedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
             ){
-        return service.showTasks(priority, status, q, dueDateFrom, dueDateTo);
+        return service.showTasks(priority, status, q, dueDateFrom, dueDateTo, page, size, sortBy, sortDir);
     }
 
 

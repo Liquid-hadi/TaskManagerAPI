@@ -10,11 +10,14 @@ import com.example.taskmanager.exceptions.CustomException;
 import com.example.taskmanager.repository.TaskRepo;
 import com.example.taskmanager.spec.TaskSpecifications;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 public class TaskServiceImpl implements TaskService{
@@ -30,14 +33,29 @@ public class TaskServiceImpl implements TaskService{
 
     //===============Show All Tasks=================
     @Transactional
-    public List<TaskResponse> showTasks(TaskPriority priority, TaskStatus status, String q, LocalDate dueDateFrom, LocalDate dueDateTo){
+    public Page<TaskResponse> showTasks(TaskPriority priority, TaskStatus status, String q, LocalDate dueDateFrom, LocalDate dueDateTo, int page, int  size, String sortBy, String sortDir){
+
+        if(!sortBy.equals("CreatedAt") && !sortBy.equals("dueDate") && !sortBy.equals("priority")) {
+            sortBy = "CreatedAt";
+        }
+
+        Sort.Direction direction;
+
+        if ("asc".equalsIgnoreCase(sortDir)) {
+            direction = Sort.Direction.ASC;
+        } else {
+            direction = Sort.Direction.DESC;
+        }
+
+        Pageable pageable = PageRequest.of(0,50, Sort.by(direction, sortBy));
+
         Specification<TaskEntity> spec = TaskSpecifications.notDeleted()
                 .and(TaskSpecifications.hasPriority(priority))
                 .and(TaskSpecifications.hasSatus(status))
                 .and(TaskSpecifications.SearchQ(q))
                 .and(TaskSpecifications.dueDateBetween(dueDateFrom,dueDateTo));
 
-        List<TaskEntity> tasks = repo.findAll(spec);
+        Page<TaskEntity> tasks = repo.findAll(spec, pageable);
 
         for(TaskEntity task : tasks){
             if (task.getStatus() == TaskStatus.IN_PROGRESS && task.getDueDate().isBefore(LocalDate.now()))
@@ -46,7 +64,7 @@ public class TaskServiceImpl implements TaskService{
             }
         }
 
-        return tasks.stream().map(task ->new TaskResponse(
+        return tasks.map(task ->new TaskResponse(
                 task.getId(),
                 task.getName(),
                 task.getDescription(),
@@ -55,7 +73,7 @@ public class TaskServiceImpl implements TaskService{
                 task.getStatus(),
                 task.getCreatedAt(),
                 task.getUpdatedAt()
-        )).toList();
+        ));
     }
     // ==================DELETE FUNCTION==================
     @Transactional

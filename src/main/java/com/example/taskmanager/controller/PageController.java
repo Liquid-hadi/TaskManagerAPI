@@ -22,6 +22,10 @@ public class PageController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "CreatedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
             Model model
     ) {
         model.addAttribute("priority", priority);
